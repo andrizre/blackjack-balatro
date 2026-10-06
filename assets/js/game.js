@@ -294,7 +294,12 @@ export function chooseBossReward(state, index) {
     return { ok: false, reason: 'Hadiah boss sudah diambil' };
   }
   const choices = state.bossChoices || [];
-  const jokerId = choices[index];
+  let jokerId = choices[index] || null;
+  // Slot penuh: hadiah joker otomatis jatuh ke uang, jangan melebihi kapasitas.
+  if (jokerId && state.jokers.length >= state.jokerSlots) {
+    jokerId = null;
+    pushBanner(state, 'SLOT JOKER PENUH - hadiah jadi $10', 'warn');
+  }
   if (jokerId) {
     state.jokers.push(jokerId);
     const joker = JOKER_BY_ID.get(jokerId);
@@ -307,7 +312,7 @@ export function chooseBossReward(state, index) {
   }
   state.bossChoices = null;
   state.bossRewardTaken = true;
-  return { ok: true, jokerId: jokerId || null, money: jokerId ? 0 : 10 };
+  return { ok: true, jokerId, money: jokerId ? 0 : 10 };
 }
 
 export function newRun(seed) {
